@@ -23,6 +23,7 @@ COPY package.json pnpm-lock.yaml /var/www/stremio-web
 RUN pnpm i --frozen-lockfile
 
 COPY . /var/www/stremio-web
+RUN git init && git add -A && git commit -m "build"
 RUN pnpm build
 
 # Setup server

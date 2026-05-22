@@ -1,37 +1,32 @@
 # Stremio Node 20.x
-# the node version for running Stremio Web
 ARG NODE_VERSION=20-alpine
 FROM node:$NODE_VERSION AS base
 
-# Setup pnpm
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 RUN apk add --no-cache git
 
-# Meta
 LABEL Description="Stremio Web" Vendor="Smart Code OOD" Version="1.0.0"
 
 RUN mkdir -p /var/www/stremio-web
 WORKDIR /var/www/stremio-web
 
-# Setup app
 FROM base AS app
 
 COPY package.json pnpm-lock.yaml /var/www/stremio-web
 RUN pnpm i --frozen-lockfile
 
 COPY . /var/www/stremio-web
-RUN git init && git add -A && git commit -m "build"
+RUN git config --global user.email "build@build.com" && \
+    git config --global user.name "Build" && \
+    git init && git add -A && git commit -m "build"
 RUN pnpm build
 
-# Setup server
 FROM base AS server
-
 RUN pnpm i express@4
 
-# Finalize
 FROM base
 
 COPY http_server.js /var/www/stremio-web
